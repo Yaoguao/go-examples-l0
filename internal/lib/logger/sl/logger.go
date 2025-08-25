@@ -3,7 +3,7 @@ package sl
 import (
 	"io"
 	"log/slog"
-	"url-shortener/internal/lib/logger/handlers/slogpretty"
+	"wb-examples-l0/internal/lib/logger/handlers/slogpretty"
 )
 
 var logger *slog.Logger
