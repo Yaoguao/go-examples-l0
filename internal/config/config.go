@@ -12,6 +12,9 @@ type Config struct {
 	HTTPServer HTTPServer `yaml:"http_server"`
 	Storage    Storage    `yaml:"storage"`
 	Kafka      Kafka      `yaml:"kafka"`
+	LruCache   struct {
+		Capacity int `yaml:"capacity"`
+	} `yaml:"lru_cache"`
 }
 
 type HTTPServer struct {
