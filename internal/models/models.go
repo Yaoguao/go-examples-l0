@@ -80,8 +80,6 @@ func ValidateOrder(v *validator.Validator, order *Order) {
 	//	???
 	// v.Check(validatorp.PermittedValue(order.Locale, "en", "ru", "es", "fr", "de", "it"), "locale", "must be a valid locale")
 
-	v.Check(len(order.InternalSignature) <= 255, "internal_signature", "must not be more than 255 bytes long")
-
 	v.Check(order.CustomerID != "", "customer_id", "must be provided")
 
 	v.Check(order.DeliveryService != "", "delivery_service", "must be provided")
