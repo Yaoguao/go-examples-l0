@@ -14,6 +14,7 @@ import (
 	"wb-examples-l0/internal/config"
 	"wb-examples-l0/internal/http-server/handlers/order/find"
 	log2 "wb-examples-l0/internal/http-server/middleware/logger"
+	"wb-examples-l0/internal/kafka"
 	"wb-examples-l0/internal/lib/logger/sl"
 	"wb-examples-l0/internal/models"
 	"wb-examples-l0/internal/storage/cache"
@@ -34,7 +35,7 @@ func main() {
 	}
 
 	/*cache := */
-	cache.NewLRUCache(cfg.LruCache.Capacity, storage, log)
+	cache := cache.NewLRUCache(cfg.LruCache.Capacity, storage, log)
 
 	router := chi.NewRouter()
 
@@ -45,10 +46,26 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
-	router.Get("/order/{order_uid}", find.New(log, storage))
+	router.Get("/order/{order_uid}", find.New(log, storage, cache))
+
+	orderConsumer, err := kafka.NewConsumer(
+		cfg.Kafka.Addresses,
+		cfg.Kafka.Consumer.OrderTopic,
+		cfg.Kafka.Consumer.OrderGroup,
+		kafka.NewOrderHandler(log, storage),
+	)
+	if err != nil {
+		log.Info(err.Error(), nil)
+		os.Exit(1)
+	}
+
+	go orderConsumer.Start()
 
 	err = serve(log, cfg, router)
 	log.Info("stop", err)
+	if err := orderConsumer.Stop(); err != nil {
+		log.Info(err.Error(), nil)
+	}
 
 	//	TEST -------------------------------
 	//order := createTestOrder()
