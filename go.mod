@@ -1,10 +1,11 @@
 module wb-examples-l0
 
-go 1.24.6
+go 1.23.12
 
 require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/ajg/form v1.5.1 // indirect
+	github.com/confluentinc/confluent-kafka-go/v2 v2.11.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/go-chi/chi/v5 v5.2.2 // indirect
 	github.com/go-chi/render v1.0.3 // indirect

@@ -28,11 +28,7 @@ type Storage struct {
 }
 
 type Kafka struct {
-	Brokers struct {
-		Broker1_host string `yaml:"broker1_host"`
-		Broker2_host string `yaml:"broker2_host"`
-		Broker3_host string `yaml:"broker3_host"`
-	} `yaml:"brokers"`
+	Addresses []string `yaml:"addresses"`
 
 	Consumer struct {
 		OrderTopic string `yaml:"order_topic"`
