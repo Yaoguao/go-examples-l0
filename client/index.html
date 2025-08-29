@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WB Orders Monitor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .order-details {
+            margin-top: 15px;
+        }
+        .order-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+        .performance-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📦 WB Orders Monitor</h1>
+
+    <div class="search-form">
+        <input type="text" id="orderUid" placeholder="Введите order_uid" />
+        <button onclick="getOrder()">Найти заказ</button>
+    </div>
+
+    <div id="result"></div>
+    <div id="performance"></div>
+</div>
+
+<script>
+    async function getOrder() {
+        const orderUid = document.getElementById('orderUid').value.trim();
+        const resultDiv = document.getElementById('result');
+        const performanceDiv = document.getElementById('performance');
+
+        performanceDiv.innerHTML = '';
+
+        if (!orderUid) {
+            resultDiv.innerHTML = '<div class="error">Пожалуйста, введите order_uid</div>';
+            return;
+        }
+
+        resultDiv.innerHTML = '<div><span class="loading"></span> Ищем заказ...</div>';
+
+        const startTime = performance.now();
+
+        try {
+            const response = await fetch(`http://localhost:8081/order/${orderUid}`);
+            const requestTime = performance.now() - startTime;
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Заказ не найден');
+                }
+                throw new Error(`Ошибка сервера: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const totalTime = performance.now() - startTime;
+
+            if (data.error) {
+                resultDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                showPerformanceInfo(requestTime, totalTime, false);
+                return;
+            }
+
+            displayOrder(data.order);
+            showPerformanceInfo(requestTime, totalTime, true);
+
+        } catch (error) {
+            const errorTime = performance.now() - startTime;
+            resultDiv.innerHTML = `<div class="error">Ошибка: ${error.message}</div>`;
+            showPerformanceInfo(errorTime, errorTime, false);
+        }
+    }
+
+    function displayOrder(order) {
+        const resultDiv = document.getElementById('result');
+
+        resultDiv.innerHTML = `
+            <div class="success">✅ Заказ успешно найден!</div>
+            <div class="order-details">
+                <h2>Информация о заказе</h2>
+                <p><strong>Order UID:</strong> ${order.order_uid}</p>
+                <p><strong>Track Number:</strong> ${order.track_number}</p>
+                <p><strong>Статус:</strong> Обработан</p>
+
+                <h3>Доставка</h3>
+                <p><strong>Получатель:</strong> ${order.delivery.name}</p>
+                <p><strong>Телефон:</strong> ${order.delivery.phone}</p>
+                <p><strong>Адрес:</strong> ${order.delivery.city}, ${order.delivery.address}</p>
+
+                <h3>Оплата</h3>
+                <p><strong>Сумма:</strong> $${order.payment.amount / 100}</p>
+                <p><strong>Валюта:</strong> ${order.payment.currency}</p>
+
+                <h3>Товары (${order.items.length})</h3>
+                ${order.items.map(item => `
+                    <div class="order-item">
+                        <strong>${item.name}</strong> - $${item.price / 100}<br>
+                        Бренд: ${item.brand}, Количество: 1
+                    </div>
+                `).join('')}
+
+                <p><strong>Дата создания:</strong> ${new Date(order.date_created).toLocaleString('ru-RU')}</p>
+            </div>
+        `;
+    }
+
+    function showPerformanceInfo(requestTime, totalTime, success) {
+        const performanceDiv = document.getElementById('performance');
+
+        performanceDiv.innerHTML = `
+            <div class="performance-info">
+                <h3>⚡ Производительность запроса</h3>
+                <p><strong>Время ответа сервера:</strong> ${requestTime.toFixed(2)} ms</p>
+                <p><strong>Общее время обработки:</strong> ${totalTime.toFixed(2)} ms</p>
+                <p><strong>Статус:</strong> ${success ? '✅ Успешно' : '❌ Ошибка'}</p>
+                <p><strong>Время:</strong> ${new Date().toLocaleString('ru-RU')}</p>
+            </div>
+        `;
+    }
+
+    document.getElementById('orderUid').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            getOrder();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const performanceDiv = document.getElementById('performance');
+        performanceDiv.innerHTML = `
+            <div class="performance-info">
+                <h3>ℹ️ Информация</h3>
+                <p>Введите order_uid для поиска заказа. Пример: <code>b563feb7b2b84b6test</code></p>
+                <p>Время запроса будет отображаться здесь после выполнения.</p>
+            </div>
+        `;
+    });
+</script>
+</body>
+</html>
