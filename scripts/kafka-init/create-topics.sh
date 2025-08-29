@@ -10,7 +10,7 @@ until /usr/bin/kafka-topics --bootstrap-server "$BROKER" --list >/dev/null 2>&1;
 done
 echo "ready connection"
 
-TOPICS=($MOVIES_TOPIC $REVIEWS_TOPIC)
+TOPICS=($ORDER_TOPIC)
 
 for topic in "${TOPICS[@]}"; do
   echo "→ CHECK $topic..."

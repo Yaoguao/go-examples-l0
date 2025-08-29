@@ -22,75 +22,6 @@ func New(dsn string) (*Storage, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	//	MIGRATION (сделаю пока тут, возможно сделаю отдельным инструментом)
-	migrations := []string{
-		`CREATE TABLE IF NOT EXISTS orders(
-            order_uid VARCHAR(255) PRIMARY KEY,
-            track_number VARCHAR(255),
-            entry VARCHAR(50),
-            locale VARCHAR(10),
-            internal_signature VARCHAR(255),
-            customer_id VARCHAR(255),
-            delivery_service VARCHAR(100),
-            shardkey VARCHAR(10),
-            sm_id INT,
-            date_created TIMESTAMPTZ,
-            oof_shard VARCHAR(10)
-        )`,
-
-		`CREATE TABLE IF NOT EXISTS deliveries(
-            order_uid VARCHAR(255) PRIMARY KEY REFERENCES orders(order_uid) ON DELETE CASCADE,
-            name VARCHAR(255) NOT NULL,
-            phone VARCHAR(50) NOT NULL,
-            zip VARCHAR(50),
-            city VARCHAR(255) NOT NULL,
-            address TEXT NOT NULL,
-            region VARCHAR(255),
-            email VARCHAR(255)
-        )`,
-
-		`CREATE TABLE IF NOT EXISTS payments(
-            order_uid VARCHAR(255) PRIMARY KEY REFERENCES orders(order_uid) ON DELETE CASCADE,
-            request_id VARCHAR(255),
-            currency VARCHAR(10) NOT NULL,
-            provider VARCHAR(100) NOT NULL,
-            amount INT NOT NULL,
-            payment_dt BIGINT NOT NULL,
-            bank VARCHAR(100),
-            delivery_cost INT,
-            goods_total INT NOT NULL,
-            custom_fee INT
-        )`,
-
-		`CREATE TABLE IF NOT EXISTS items(
-            id SERIAL PRIMARY KEY,
-            order_uid VARCHAR(255) NOT NULL REFERENCES orders(order_uid) ON DELETE CASCADE,
-            chrt_id BIGINT NOT NULL,
-            track_number VARCHAR(255),
-            price INT NOT NULL,
-            rid VARCHAR(255) NOT NULL,
-            name VARCHAR(255) NOT NULL,
-            sale INT,
-            size VARCHAR(50),
-            total_price INT NOT NULL,
-            nm_id BIGINT,
-            brand VARCHAR(255),
-            status INT NOT NULL
-        )`,
-
-		`CREATE INDEX IF NOT EXISTS idx_items_order_uid ON items(order_uid)`,
-		`CREATE INDEX IF NOT EXISTS idx_orders_track_number ON orders(track_number)`,
-		`CREATE INDEX IF NOT EXISTS idx_orders_customer_id ON orders(customer_id)`,
-		`CREATE INDEX IF NOT EXISTS idx_orders_date_created ON orders(date_created)`,
-	}
-
-	for i, migration := range migrations {
-		_, err = db.Exec(migration)
-		if err != nil {
-			return nil, fmt.Errorf("%s: failed to execute migration %d: %w", op, i+1, err)
-		}
-	}
-
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -272,23 +203,3 @@ func (s *Storage) GetAllLimitOrderUIDs(limit int) ([]string, error) {
 
 	return uids, nil
 }
-
-// TODO - попытаться оптимизировать запрос
-//func (s *Storage) GetAllLimitOrder(limit int) ([]models.Order, error) {
-//	uids, err := s.getAllLimitOrderUIDs(limit)
-//	if err != nil {
-//		return nil, fmt.Errorf("get order UIDs: %w", err)
-//	}
-//
-//	var orders []models.Order
-//	for _, uid := range uids {
-//		order, err := s.GetOrderByUID(uid)
-//		if err != nil {
-//			log.Printf("error load order")
-//			continue
-//		}
-//		orders = append(orders, *order)
-//	}
-//
-//	return orders, nil
-//}

@@ -45,7 +45,7 @@ func (h *OrderHandler) HandleMessage(message []byte, offset kafka.Offset) error 
 		return fmt.Errorf("failed to save order: %w", err)
 	}
 
-	h.log.Info("order processed successfully",
+	h.log.Debug("order processed successfully",
 		"order_uid", order.OrderUID,
 		"offset", offset,
 		"items_count", len(order.Items))

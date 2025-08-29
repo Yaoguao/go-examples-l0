@@ -19,6 +19,16 @@ type OrderFinder interface {
 	GetOrderByUID(orderUID string) (*models.Order, error)
 }
 
+// @Summary Get order by UID
+// @Description Get order details by order_uid
+// @Tags orders
+// @Accept  json
+// @Produce  json
+// @Param order_uid path string true "Order UID"
+// @Success 200 {object} find.response
+// @Failure 400 {object} find.response
+// @Failure 404 {object} find.response
+// @Router /order/{order_uid} [get]
 func New(log *slog.Logger, orderFinder OrderFinder, cache *cache.LRUCache) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		const op = "handlers.order.find.New"

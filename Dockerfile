@@ -1,4 +1,4 @@
-FROM golang:1.23-bullseye AS builder
+FROM golang:1.24-bullseye AS builder
 
 ENV GOPROXY=https://goproxy.cn,direct
 ENV GOSUMDB=off
@@ -39,3 +39,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /app/bin/prod /prod
 
 CMD ["/prod"]
+
