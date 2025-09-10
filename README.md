@@ -4,15 +4,9 @@
 ## инструкция
 
 ```
-# Сборка и запуск всех сервисов
-docker-compose up --build
+# Попытался поднять все в docker 
 
-# После запуска PostgreSQL
-migrate -path=./migrations -database="postgres://wbexaml0db:wbexam@localhost/wbexaml0db?sslmode=disable" up
-
-# Основной сервис (HTTP API + Kafka Consumer)
-go run cmd/wb-examples-l0/main.go
-
-# Producer для тестовых данных
-go run cmd/producer/main.go
+docker-compose up --build  
 ```
+
+В директории client есть файл html который взаимодействует с сервером

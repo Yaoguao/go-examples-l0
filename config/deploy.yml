@@ -1,6 +1,6 @@
 env: "dev"
 http_server:
-  address: "localhost:8081"
+  address: ":8081"
   timeout: 4s
   idle_timeout: 60s
 storage:
@@ -8,7 +8,7 @@ storage:
     dsn: "postgres://wbexaml0db:wbexam@db/wbexaml0db?sslmode=disable"
     max_open_conns: 100
     max_idle_conns: 50
-    conn_max_lifetime: 10m
+    max_idle_time: 10m
   lru_cache:
     capacity: 50
 kafka:

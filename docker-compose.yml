@@ -22,35 +22,35 @@ services:
       timeout: 3s
       retries: 5
 
-#  prod:
-#    build:
-#      target: producer
-#    container_name: prod
-#    env_file:
-#      - .env
-#    depends_on:
-#      kafka-init:
-#        condition: service_completed_successfully
-#    networks:
-#      - mynetwork
-#    restart: on-failure
-#
-#  app:
-#    build:
-#      target: app
-#    container_name: order-service
-#    env_file:
-#      - .env
-#    ports:
-#      - "8081:8081"
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#      kafka-init:
-#        condition: service_completed_successfully
-#    networks:
-#      - mynetwork
-#    restart: on-failure
+  prod:
+    build:
+      target: producer
+    container_name: prod
+    env_file:
+      - .env
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    networks:
+      - mynetwork
+    restart: on-failure
+
+  app:
+    build:
+      target: app
+    container_name: order-service
+    env_file:
+      - .env
+    ports:
+      - "8081:8081"
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    networks:
+      - mynetwork
+    restart: on-failure
 
   zookeeper:
     image: confluentinc/cp-zookeeper
@@ -144,6 +144,20 @@ services:
       - .env
     networks:
       - mynetwork
+
+  migrations:
+    build:
+      context: .
+      target: migrator
+    container_name: go-migrate
+    env_file:
+      - .env
+    networks:
+      - mynetwork
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
 
 networks:
   mynetwork:

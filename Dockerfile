@@ -18,6 +18,8 @@ RUN go build -o /app/bin/app ./cmd/wb-examples-l0
 
 RUN go build -o /app/bin/prod ./cmd/producer
 
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
 #                 STAGE 2
 FROM debian:bullseye-slim AS app
 
@@ -42,4 +44,13 @@ COPY --from=builder /app/config /config
 
 CMD ["/prod"]
 
+#                BUILD MIGRATOR
 
+FROM debian:bullseye-slim AS migrator
+
+RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client
+
+COPY --from=builder /go/bin/migrate /usr/local/bin/migrate
+COPY --from=builder /app/migrations /app/migrations
+
+ENTRYPOINT ["/bin/sh", "-c", "migrate -path=/app/migrations -database=postgres://wbexaml0db:wbexam@db/wbexaml0db?sslmode=disable up"]
