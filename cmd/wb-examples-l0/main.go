@@ -46,23 +46,23 @@ func main() {
 
 	log.Debug("config", cfg)
 
-	storage, err := postgres.New(cfg.Storage.PostgresDB_DSN)
+	storage, err := postgres.New(cfg)
 	if err != nil {
 		log.Error("failed to init storage", sl.Err(err))
 		os.Exit(1)
 	}
 
 	/*cache := */
-	cache := cache.NewLRUCache(cfg.LruCache.Capacity, storage, log)
+	cache := cache.NewLRUCache(cfg.Storage.LruCache.Capacity, storage, log)
 
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"null", "file://", "http://localhost:3000", "http://127.0.0.1:3000"},
+		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
+		AllowCredentials: false,
 		MaxAge:           300,
 	}))
 

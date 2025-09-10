@@ -39,7 +39,6 @@ func main() {
 			"topic", cfg.Kafka.Consumer.OrderTopic,
 		)
 
-		// Ждем перед отправкой следующего сообщения
 		time.Sleep(5 * time.Second)
 	}
 

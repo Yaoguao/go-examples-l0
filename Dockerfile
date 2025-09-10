@@ -26,6 +26,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/bin/app /app
+COPY --from=builder /app/config /config
 
 CMD ["/app"]
 
@@ -37,6 +38,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/bin/prod /prod
+COPY --from=builder /app/config /config
 
 CMD ["/prod"]
+
 

@@ -15,6 +15,7 @@ type response struct {
 	Error string        `json:"error,omitempty"`
 }
 
+//go:generate go
 type OrderFinder interface {
 	GetOrderByUID(orderUID string) (*models.Order, error)
 }

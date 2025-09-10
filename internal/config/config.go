@@ -12,9 +12,6 @@ type Config struct {
 	HTTPServer HTTPServer `yaml:"http_server"`
 	Storage    Storage    `yaml:"storage"`
 	Kafka      Kafka      `yaml:"kafka"`
-	LruCache   struct {
-		Capacity int `yaml:"capacity"`
-	} `yaml:"lru_cache"`
 }
 
 type HTTPServer struct {
@@ -24,7 +21,15 @@ type HTTPServer struct {
 }
 
 type Storage struct {
-	PostgresDB_DSN string `yaml:"postgresdb_dsn"`
+	Postgres struct {
+		Dsn          string `yaml:"dsn"`
+		MaxOpenConns int    `yaml:"max_open_conns"`
+		MaxIdleConns int    `yaml:"max_idle_conns"`
+		MaxIdleTime  string `yaml:"max_idle_time"`
+	} `yaml:"postgres"`
+	LruCache struct {
+		Capacity int `yaml:"capacity"`
+	} `yaml:"lru_cache"`
 }
 
 type Kafka struct {

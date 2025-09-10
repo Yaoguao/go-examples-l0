@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
+	"wb-examples-l0/internal/config"
 	"wb-examples-l0/internal/models"
 
 	_ "github.com/lib/pq"
@@ -14,13 +15,24 @@ type Storage struct {
 	db *sql.DB
 }
 
-func New(dsn string) (*Storage, error) {
+func New(cfg *config.Config) (*Storage, error) {
 	const op = "storage.postgres.New"
 
-	db, err := sql.Open("postgres", dsn)
+	db, err := sql.Open("postgres", cfg.Storage.Postgres.Dsn)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
+	db.SetMaxOpenConns(cfg.Storage.Postgres.MaxOpenConns)
+
+	db.SetMaxIdleConns(cfg.Storage.Postgres.MaxIdleConns)
+
+	duration, err := time.ParseDuration(cfg.Storage.Postgres.MaxIdleTime)
+	if err != nil {
+		return nil, err
+	}
+
+	db.SetConnMaxIdleTime(duration)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
