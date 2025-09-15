@@ -21,7 +21,7 @@ import (
 	"wb-examples-l0/internal/storage/cache"
 	"wb-examples-l0/internal/storage/postgres"
 
-	_ "wb-examples-l0/docs" // импортируем сгенерированные docs
+	_ "wb-examples-l0/docs"
 )
 
 // @title WB L0 Orders API
